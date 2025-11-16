@@ -25,6 +25,7 @@ def api_evaluate():
     try:
         result = calculate_cycle_details(
             payload.get("last_date"),
+            observation_date=payload.get("target_date"),
             cycle_length=cycle_length,
             menses_days=menses_days,
             role=(payload.get("role") or "self"),

@@ -37,6 +37,7 @@ python app.py
 - `last_date` (string) – 上次月经开始日期，格式 `YYYY-MM-DD`
 - `cycle_length` (int) – 平均周期长度（建议 20–40）
 - `menses_days` (int) – 经期持续天数（建议 1–10）
+- `target_date` (string) – 想要观察/预测的日期（`YYYY-MM-DD`，留空则默认当天）
 - `role` (string) – `self` / `partner` / `other`，用于确定建议视角
 - `tone` (string) – `gentle` 或 `playful`，调整文案风格
 
@@ -50,7 +51,7 @@ python app.py
   "hormones": {"estrogen": 62, "progesterone": 18, "LH": 11, "testosterone": 22},
   "symptoms": ["体力恢复", "专注度提升", "心情平稳", "对新事物好奇"],
   "advice": {"headline": "...", "items": ["..."]},
-  "today": "2024-06-01"
+  "observed_date": "2024-06-01"
 }
 ```
 若参数缺失或格式错误，会返回 `{"error": "...错误信息..."}`，HTTP 状态码 400。

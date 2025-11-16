@@ -129,6 +129,9 @@
         <label for="last_date">上次月经开始日期</label>
         <input type="date" id="last_date" name="last_date" required />
 
+        <label for="observe_date">想观察的日期（可回溯或预估）</label>
+        <input type="date" id="observe_date" name="observe_date" required />
+
         <label for="cycle_length">平均周期长度（天）</label>
         <input
           type="number"
@@ -183,6 +186,15 @@
     <script>
       const form = document.getElementById("cycle-form");
       const resultEl = document.getElementById("result");
+      const observeInput = document.getElementById("observe_date");
+      const lastInput = document.getElementById("last_date");
+      const todayStr = new Date().toISOString().split("T")[0];
+      if (!observeInput.value) {
+        observeInput.value = todayStr;
+      }
+      if (!lastInput.value) {
+        lastInput.max = todayStr;
+      }
 
       function renderAdvice(advice) {
         if (!advice) return "";
@@ -211,6 +223,7 @@
         event.preventDefault();
         const payload = {
           last_date: document.getElementById("last_date").value,
+          target_date: document.getElementById("observe_date").value,
           cycle_length: document.getElementById("cycle_length").value,
           menses_days: document.getElementById("menses_days").value,
           role: document.getElementById("role").value,
@@ -231,7 +244,7 @@
           }
 
           resultEl.innerHTML = `
-            <div><strong>今天日期：</strong>${data.today}</div>
+            <div><strong>观察日期：</strong>${data.observed_date}</div>
             <div><strong>周期日：</strong>${data.cycle_day} / ${data.cycle_length} 天</div>
             <div><strong>阶段：</strong>${data.phase}</div>
             <div class="hormones">

@@ -588,6 +588,7 @@ def _advice_for_phase(
 def calculate_cycle_details(
     last_period_date: str,
     *,
+    observation_date: str | None = None,
     cycle_length: int = DEFAULT_CYCLE_LENGTH,
     menses_days: int = DEFAULT_MENSES_DAYS,
     role: str = "self",
@@ -601,16 +602,16 @@ def calculate_cycle_details(
         raise ValueError("经期持续天数建议在 1-10 天之间。")
 
     start = _parse_date(last_period_date)
-    today = date.today()
-    delta = (today - start).days
+    observed = date.today() if not observation_date else _parse_date(observation_date)
+    delta = (observed - start).days
     if delta < 0:
-        raise ValueError("上次月经开始日期不能在未来。")
+        raise ValueError("观察日期不能早于上次月经开始日期。")
 
     cycle_day = (delta % cycle_length) + 1
     phase_key = _estimate_phase_key(cycle_day, cycle_length, menses_days)
     hormones = _estimate_hormone_levels(cycle_day, cycle_length)
     symptoms = SYMPTOM_LIBRARY.get(phase_key, [])
-    seed_value = f"{today.isoformat()}-{cycle_day}"
+    seed_value = f"{observed.isoformat()}-{cycle_day}"
     advice = _advice_for_phase(phase_key, role=role, tone=tone, seed=seed_value)
 
     return {
@@ -621,7 +622,7 @@ def calculate_cycle_details(
         "hormones": hormones,
         "symptoms": symptoms,
         "advice": advice,
-        "today": today.isoformat(),
+        "observed_date": observed.isoformat(),
     }
 
 
