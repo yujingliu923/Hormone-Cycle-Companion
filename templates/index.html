@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>激素周期伴侣 · Hormone Cycle Companion</title>
+    <style>
+      :root {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "PingFang SC",
+          "Helvetica Neue", Arial, sans-serif;
+        color: #1f2937;
+      }
+      body {
+        margin: 0;
+        padding: 20px;
+        background: linear-gradient(145deg, #fdfbfb, #ebedee);
+      }
+      .card {
+        max-width: 760px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(15, 23, 42, 0.1);
+        padding: 24px;
+      }
+      h1 {
+        margin-top: 0;
+        font-size: 1.8rem;
+      }
+      p.note {
+        font-size: 0.9rem;
+        color: #6b7280;
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        margin-top: 16px;
+        margin-bottom: 6px;
+      }
+      input,
+      select {
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        padding: 12px;
+        font-size: 1rem;
+        box-sizing: border-box;
+      }
+      button {
+        margin-top: 20px;
+        width: 100%;
+        border: none;
+        border-radius: 12px;
+        padding: 14px;
+        font-size: 1rem;
+        background: #8b5cf6;
+        color: #fff;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 30px rgba(139, 92, 246, 0.28);
+      }
+      .result {
+        margin-top: 24px;
+        padding: 20px;
+        border-radius: 14px;
+        background: #f5f6fb;
+      }
+      .hormones {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 12px;
+        margin: 16px 0;
+      }
+      .h-item {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        padding: 12px;
+      }
+      .h-item strong {
+        display: block;
+        font-size: 0.95rem;
+      }
+      .small {
+        font-size: 0.85rem;
+        color: #6b7280;
+      }
+      ul {
+        padding-left: 20px;
+      }
+      .cite {
+        margin-top: 24px;
+        font-size: 0.85rem;
+        color: #6b7280;
+      }
+      footer {
+        margin-top: 16px;
+        font-size: 0.8rem;
+        color: #94a3b8;
+        text-align: center;
+      }
+      @media (max-width: 600px) {
+        body {
+          padding: 12px;
+        }
+        .card {
+          padding: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>激素周期伴侣</h1>
+      <p class="note">此工具仅用于自我觉察和情绪沟通，不能替代专业医疗建议。</p>
+      <form id="cycle-form">
+        <label for="last_date">上次月经开始日期</label>
+        <input type="date" id="last_date" name="last_date" required />
+
+        <label for="cycle_length">平均周期长度（天）</label>
+        <input
+          type="number"
+          id="cycle_length"
+          name="cycle_length"
+          min="20"
+          max="40"
+          value="28"
+          required
+          placeholder="例如：28"
+        />
+
+        <label for="menses_days">经期持续天数</label>
+        <input
+          type="number"
+          id="menses_days"
+          name="menses_days"
+          min="1"
+          max="10"
+          value="5"
+          required
+          placeholder="例如：5"
+        />
+
+        <label for="role">使用者身份</label>
+        <select id="role" name="role">
+          <option value="self">我是女性，了解自己</option>
+          <option value="partner">我是男性/伴侣，想更理解她</option>
+          <option value="other">其他（仍按女性流程）</option>
+        </select>
+
+        <label for="tone">建议语气</label>
+        <select id="tone" name="tone">
+          <option value="gentle">温和</option>
+          <option value="playful">俏皮</option>
+        </select>
+
+        <button type="submit">生成状态洞察</button>
+      </form>
+
+      <div id="result" class="result" style="display: none"></div>
+      <div class="cite">
+        <strong>数据来源与假设</strong>
+        <ul>
+          <li>平均周期 28 天，个体差异大（22-38 天）</li>
+          <li>雌激素在排卵附近达到峰值，孕激素在黄体期最高</li>
+          <li>排卵期通常伴随社交欲/性欲上升，但并非所有人都会如此</li>
+        </ul>
+      </div>
+      <footer>本项目可本地部署，用于私密自我观察；如需医疗帮助请咨询专业医生。</footer>
+    </div>
+    <script>
+      const form = document.getElementById("cycle-form");
+      const resultEl = document.getElementById("result");
+
+      function renderAdvice(advice) {
+        if (!advice) return "";
+        const list =
+          advice.items || advice.tips
+            ? `<ul>${(advice.items || advice.tips)
+                .map((item) => `<li>${item}</li>`)
+                .join("")}</ul>`
+            : "";
+        const phrases = advice.phrases
+          ? `<div class="small"><strong>示例表达：</strong><ul>${advice.phrases
+              .map((p) => `<li>${p}</li>`)
+              .join("")}</ul></div>`
+          : "";
+        return `
+          <div class="advice">
+            <p><strong>建议：</strong></p>
+            <p><em>${advice.headline || ""}</em></p>
+            ${list}
+            ${phrases}
+          </div>
+        `;
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const payload = {
+          last_date: document.getElementById("last_date").value,
+          cycle_length: document.getElementById("cycle_length").value,
+          menses_days: document.getElementById("menses_days").value,
+          role: document.getElementById("role").value,
+          tone: document.getElementById("tone").value,
+        };
+        resultEl.style.display = "block";
+        resultEl.innerHTML = "正在计算，请稍候...";
+        try {
+          const response = await fetch("/api/evaluate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            resultEl.innerHTML = `<span style="color:#dc2626"><strong>错误：</strong>${data.error}</span>`;
+            return;
+          }
+
+          resultEl.innerHTML = `
+            <div><strong>今天日期：</strong>${data.today}</div>
+            <div><strong>周期日：</strong>${data.cycle_day} / ${data.cycle_length} 天</div>
+            <div><strong>阶段：</strong>${data.phase}</div>
+            <div class="hormones">
+              <div class="h-item"><strong>雌激素</strong><span>${data.hormones.estrogen}%</span></div>
+              <div class="h-item"><strong>孕激素</strong><span>${data.hormones.progesterone}%</span></div>
+              <div class="h-item"><strong>LH</strong><span>${data.hormones.LH}%</span></div>
+              <div class="h-item"><strong>睾酮</strong><span>${data.hormones.testosterone}%</span></div>
+            </div>
+            <div>
+              <strong>常见感受：</strong>
+              <ul>${data.symptoms.map((item) => `<li>${item}</li>`).join("")}</ul>
+            </div>
+            ${renderAdvice(data.advice)}
+          `;
+        } catch (error) {
+          resultEl.innerHTML = `<span style="color:#dc2626"><strong>错误：</strong>网络或服务器异常，请稍后再试。</span>`;
+        }
+      });
+    </script>
+  </body>
+</html>
